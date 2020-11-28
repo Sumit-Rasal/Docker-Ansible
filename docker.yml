@@ -1,0 +1,42 @@
+
+- hosts: 192.168.60.242
+  tasks:
+  - name: creating a docker repository
+    yum_repository:
+         description: repo for docker
+         name: docker-ce
+         baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+         gpgcheck: no
+  - name: installing docker
+    command: "yum install docker-ce --nobest -y"
+  - name: starting docker services
+    service:
+          name: docker
+          state: started
+  - name: installing the pip3 in the system
+    command: " dnf install python3-pip -y"
+
+  - name: installing docker SDK
+    command: "pip3 install docker"
+  - name: making a directory on managed node
+    file:
+          path: /root/ansible1/index.html
+          state: directory
+  - name: copying webpage to managed node directory
+    copy:
+          src: index.html
+          dest: /root/ansible1/index.html
+  - name: pulling docker image
+    docker_image:
+           name: httpd
+           source: pull
+  - name: creating a container
+    docker_container:
+           name: webos
+           image: httpd
+           volumes:
+                 -  /root/ansible1/index.html:/usr/local/apache2/htdocs/
+           ports:
+                 -  "82:80"
+           state: started
+           detach: yes
